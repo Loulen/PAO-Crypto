@@ -4,6 +4,8 @@ from datetime import datetime, timedelta,date, time
 import pandas as pd
 
 def get_ohlc_data_date(data, moment=None):
+    """Fonction retournant une DataFrame contenant une unique valeur,
+    la plus proche possible du moment choisi à partir des données data."""
     offset=timedelta(hours=1)
     t1= time((moment-offset).hour, (moment-offset).minute, (moment-offset).second)
     t2= time(moment.hour, moment.minute, moment.second)
@@ -11,13 +13,22 @@ def get_ohlc_data_date(data, moment=None):
     temp=data.filter(like=tempdate.isoformat(), axis=0)
     return temp.between_time(t1,t2)
 
-def get_data(interval=60, since=None):
+def get_data(monnaie ='BTCEUR', interval=60, since=None):
+    """Renvoie une DataFrame de max 720 valeurs selon :
+        - la paire de monnaie (monnaie) choisie sous forme de string. Par
+        defaut elle vaut 'BTCEUR' et renvoie donc la valeur du Bitcoin en Euros.
+        - l'intervalle (interval) en minutes, qui représente l'intervalle temporel
+        entre deux entrées de la DataFrame. Par défaut elle vaut 60.
+        - la date de début (since). Par défaut la fonction renvoie
+        les 720 dernières valeurs selon l'intervalle choisi.
+    """
     api = krakenex.API()
     k = KrakenAPI(api)
     ohlc = k.get_ohlc_data('BCHUSD', interval, since)
     return ohlc[0]
 
 def get_range(interval='4H'):
+    """sert pas a grand chose franchement."""
     dates_tab=pd.date_range('2018-01-01', end=datetime.now(),freq=interval).to_pydatetime()
     data=get_data()
     infos=pd.DataFrame()
@@ -27,5 +38,6 @@ def get_range(interval='4H'):
 
 def get_price_open(data) :
     return (data.loc[:,'open']).as_matrix()
+
 
 def data_matrix(cours)
