@@ -13,10 +13,12 @@ def get_ohlc_data_date(data, moment=None):
     temp=data.filter(like=tempdate.isoformat(), axis=0)
     return temp.between_time(t1,t2)
 
-def get_data(monnaie ='BTCEUR', interval=60, since=None):
+def get_data(monnaie ='XXBTZEUR', interval=60, since=None):
     """Renvoie une DataFrame de max 720 valeurs selon :
         - la paire de monnaie (monnaie) choisie sous forme de string. Par
-        defaut elle vaut 'BTCEUR' et renvoie donc la valeur du Bitcoin en Euros.
+        defaut elle vaut 'XXBTZEUR' et renvoie donc la valeur du Bitcoin en Euros.
+        Si la paire pose problème, tenter de rajouter un X devant la cryptomonaie et
+        un Z devant la monnaie "classique", comme pour la valeur par défaut :
         - l'intervalle (interval) en minutes, qui représente l'intervalle temporel
         entre deux entrées de la DataFrame. Par défaut elle vaut 60.
         - la date de début (since). Par défaut la fonction renvoie
@@ -24,7 +26,7 @@ def get_data(monnaie ='BTCEUR', interval=60, since=None):
     """
     api = krakenex.API()
     k = KrakenAPI(api)
-    ohlc = k.get_ohlc_data('BCHUSD', interval, since)
+    ohlc = k.get_ohlc_data(monnaie, interval, since)
     return ohlc[0]
 
 def get_range(interval='4H'):
@@ -35,9 +37,3 @@ def get_range(interval='4H'):
     for moment in dates_tab:
         infos=infos.append(data.filter(like=moment.isoformat(' '), axis=0))
     return infos
-
-def get_price_open(data) :
-    return (data.loc[:,'open']).as_matrix()
-
-
-def data_matrix(cours)
