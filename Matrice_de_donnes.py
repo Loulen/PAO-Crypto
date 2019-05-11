@@ -9,8 +9,8 @@ class Indicateurs:
     - SMA
     ...
     """
-    def __init__(self, date, cours, rsi, sma, ema):
-        self._dict={"date":date,"cours":cours,"rsi":rsi,"sma":sma,"ema":ema}
+    def __init__(self, date, cours, rsi, ema):
+        self._dict={"date":date,"cours":cours,"rsi":rsi,"ema":ema}
 
     # ---------------getters / setters ----------
 
@@ -53,12 +53,16 @@ class MatriceCrypto:
 
     @property
     def matrice(self):
-        """renvoie une matrice d*s avec :
+        """renvoie une DataFrame d*s avec :
         d : nombre de descripteurs
         s : nombre de séances """
-        return DataFrame.from_dict(m._donnees, orient='index',columns=["cours", "rsi", "sma", "ema"])
+        return DataFrame.from_dict(m._donnees, orient='index',columns=["cours", "rsi", "ema"])
+
+    def to_csv(self, filename):
+        self.matrice.to_csv(filename)
+
 
 indic=[]
 for i in range(20):
-    indic.append(Indicateurs(datetime(2019, 3, 6+i, 18, 00, 34), 500+i, 20+i, 30+i, i))
+    indic.append(Indicateurs(datetime(2019, 3, 6+i, 18, 00, 34), 500+i, 20+i, i))
 m=MatriceCrypto(indic)
