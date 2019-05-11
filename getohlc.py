@@ -18,7 +18,8 @@ def get_data(monnaie ='XXBTZEUR', interval=60, since=None):
         - la paire de monnaie (monnaie) choisie sous forme de string. Par
         defaut elle vaut 'XXBTZEUR' et renvoie donc la valeur du Bitcoin en Euros.
         Si la paire pose problème, tenter de rajouter un X devant la cryptomonaie et
-        un Z devant la monnaie "classique", comme pour la valeur par défaut :
+        un Z devant la monnaie "classique", comme pour la valeur par défaut. (se référer
+        aux monnaies disponibles sur la plateforme Kraken)
         - l'intervalle (interval) en minutes, qui représente l'intervalle temporel
         entre deux entrées de la DataFrame. Par défaut elle vaut 60.
         - la date de début (since). Par défaut la fonction renvoie
