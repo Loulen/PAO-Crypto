@@ -1,16 +1,18 @@
 from getohlc import get_ohlc_data_date, get_data
 from datetime import datetime
 from pandas import DataFrame
+from indicateu import sma, ema, rsi
 
-class Indicateurs:
-    """Objet contenant les différents indicateurs :
+class Descripteurs:
+    """Objet contenant les différents descripteurs :
     - cours
     - RSI
     - SMA
     ...
     """
-    def __init__(self, date, cours, rsi, sma, ema):
-        self._dict={"date":date,"cours":cours,"rsi":rsi,"sma":sma,"ema":ema}
+
+    def __init__(self, date, cours, rsi, ema):
+        self._dict = {"date": date, "cours": cours, "rsi": rsi, "ema": ema}
 
     # ---------------getters / setters ----------
 
@@ -24,58 +26,7 @@ class Indicateurs:
             else:
                 yield self._dict[key]
 
-    # -------------------Descripteurs-----------------------
-    def sma(cours,period=10):
-        """Calcule une SMA (Simple Moving Average) sur une period"""
-        sma=[]
-        for i in range(period,len(cours)):
-            sma.append(sum(cours[i-period:i-1])/period) #on a period valeurs du cours
-        return sma
-
-    def ema(cours,k=None,period=10):
-        """Calcule une EMA (Exponential Moving Average) sur une perdiod
-            avec un coefficient d'aplanissement k"""
-        if k is None :
-            k = 2/(period+1)
-        courbe = sma(cours[0:period+1],period)
-        for i in range(period+1,len(cours)):
-            print(courbe)
-            courbe.append(courbe[-1]*(1-k)+cours[i]*k)
-        return courbe
-
-
-    def rsi(cours,period=14):
-        gain=float(0)
-        loss=float(0)
-        for i in range(0,period) :
-            diff = (cours[i+1]-cours[i])
-            if (diff > 0):
-                gain = gain + diff
-            else:
-                loss = loss + abs(diff)
-
-
-
-        AG = gain/period #On utilise la SMA pour moyenner"
-        AL = loss/period
-        rsi= []
-        for i  in range(period,len(cours)-1) :
-            if (AL==0):
-                RS = 999
-            else :
-                RS = AG / AL #considérer cas AG (ou AL) = 0
-            rsi.append(100 - (100/(1+RS)))
-            diff = cours[i+1] - cours[i]
-            if (diff > 0):
-                AG = (AG*(period-1)+diff)/period
-                AL = (AL*13)/period
-            else:
-                AL = (AL*(period-1)+abs(diff))/period
-                AG = (AG*13)/period
-        return rsi
-
-
-
+   
 
 class MatriceCrypto:
     """ Objet contenant toutes les données d'une monnaie pour un moment donné,
@@ -84,8 +35,8 @@ class MatriceCrypto:
     """
 
     def __init__(self, *indicateurs):
-        self._donnees={}
-        if (len(indicateurs)>1):
+        self._donnees = {}
+        if (len(indicateurs) > 1):
             for indicateur in indicateurs:
                 self.ajouter(indicateur)
         elif (isinstance(indicateurs[0], list)):
@@ -102,25 +53,32 @@ class MatriceCrypto:
     # -------------------------------------------
 
     def ajouter(self, indicateur):
-        self._donnees.update({indicateur.date : list(indicateur)[1:]})
+        self._donnees.update({indicateur.date: list(indicateur)[1:]})
 
     @property
     def matrice(self):
-        """renvoie une matrice d*s avec :
+        """renvoie une DataFrame d*s avec :
         d : nombre de descripteurs
         s : nombre de séances """
-        return DataFrame.from_dict(m._donnees, orient='index',columns=["cours", "rsi", "sma", "ema"])
+        return DataFrame.from_dict(m._donnees, orient='index', columns=["cours", "rsi", "ema"])
 
-data = get_data(monnaie ='XXBTZEUR', interval=60, since=None)
+    def to_csv(self, filename):
+        self.matrice.to_csv(filename)
+
+
+data = get_data(monnaie='XXBTZEUR', interval=60, since=None)
 cours = data["close"]
 cours = cours[::-1]
 time = data["time"]
 time = time[::-1]
-c_sma = sma(cours)
-c_ema = ema(cours)
-c_rsi = rsi(cours)
+ema_cours=ema(cours)
+rsi_cours=rsi(cours)
+desc=[]
 
-#for i in range(20):
-    #indic.append(Indicateurs(datetime(2019, 3, 6+i, 18, 00, 34), 500+i, 20+i, 30+i, i))
-#m=MatriceCrypto(indic)
-lesIndics= Indicateurs()
+for i in range(700):
+    desc.append(Descripteurs(datetime.fromtimestamp(time[i]),cours[i], rsi_cours[i], ema_cours[i]))
+m=MatriceCrypto(desc)
+
+# for i in range(20):
+#indic.append(Indicateurs(datetime(2019, 3, 6+i, 18, 00, 34), 500+i, 20+i, 30+i, i))
+# m=MatriceCrypto(indic)

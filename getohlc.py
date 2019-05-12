@@ -1,5 +1,6 @@
 import krakenex
 from pykrakenapi import KrakenAPI
+from cryptocompareperso import get_historical_price_hour
 from datetime import datetime, timedelta,date, time
 import pandas as pd
 
@@ -38,3 +39,26 @@ def get_range(interval='4H'):
     for moment in dates_tab:
         infos=infos.append(data.filter(like=moment.isoformat(' '), axis=0))
     return infos
+
+
+def get_price_hourly(monnaieCrypto='BTC', monnaieFiat='EUR', since='1/1/2018', to='1/08/2018'):
+    """"""
+    dates=pd.date_range(start=since, end=to, freq='1H')
+    nbval=len(dates)
+    ts={}
+    h_price=[]
+    if nbval>2000:
+        limit=2000
+        while nbval>2000 :
+            ts.update({dates[nbval-1]:2000})
+            nbval=nbval-2000
+    ts.update({dates[nbval-1]:nbval})
+    for date, lim in ts.items():
+        h_price.extend(get_historical_price_hour(monnaieCrypto, date, monnaieFiat, lim)['Data'])
+
+    cours = {}
+    for hour in h_price:
+        cours.update({hour['time']:hour['open']})
+    return pd.DataFrame.from_dict(cours, orient='index', columns=['Prix'])
+
+
