@@ -3,6 +3,9 @@
 from getohlc import get_price_hourly
 import pandas as pd
 from indicateurs import ema, rsi
+import os
+import shutil
+
 
 def data_frame_annee(annee=2018, monnaie='BTC', ema_period=10, rsi_period=14, hours_per_file=168):
     data=get_price_hourly(monnaie, since='1/1/'+str(annee), to='1/1/'+str(annee+1))
@@ -21,6 +24,12 @@ def data_frame_annee(annee=2018, monnaie='BTC', ema_period=10, rsi_period=14, ho
     data=data[rsi_period+250:]
     hours_left=len(data)
     file_number=1
+
+    if not os.path.exists('./'+str(annee)):
+        os.makedirs('./'+str(annee))
+    else:  
+        shutil.rmtree('./'+str(annee))
+
     while hours_left>hours_per_file:
         data[len(data)-hours_left:len(data)-hours_left+hours_per_file].to_csv('./'+str(annee)+'/'+str(file_number))
         file_number=file_number+1
