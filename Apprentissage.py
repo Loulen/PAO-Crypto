@@ -2,9 +2,27 @@ import pandas as pd
 
 
 def apprentissage():
+        X= []
+        Y=[]
         for i in len(os.listdir('./2018')) :
                 semaine = pd.read_csv('./2018/'+str(i))
-                (semaine,y)=get_outcome(semaine)
+                (x,y) = DataOneFile(semaine)
+                X.append(x)
+                Y.append(y)
+        return (X,Y)
+               
+
+
+def DataOneFile(semaine : pd.DataFrame) -> (list,list):
+        """"x : une donnée input(contenant cours, ema, rsi ...) associée à un 
+        y qui est un outcome (ce qu'on veut prédire : seulement le prix).
+        L'outcome correspond à 1% de la donnée """
+        (semaine,y)=get_outcome(semaine)
+        x = []
+        for oneHourInfo in semaine.values :
+                x.extend(oneHourInfo)
+        return (x,y)        
+                        
                 
 
         

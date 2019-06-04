@@ -46,6 +46,7 @@ def data_frame_annee(annee=2018, monnaie='BTC', ema_period=10, rsi_period=14, ho
         os.makedirs('./'+str(annee))
     else:  
         shutil.rmtree('./'+str(annee)+'/*')
+        os.makedirs('./'+str(annee))
 
     while hours_left>hours_per_file:
         data[len(data)-hours_left:len(data)-hours_left+hours_per_file].to_csv('./'+str(annee)+'/'+str(file_number))
