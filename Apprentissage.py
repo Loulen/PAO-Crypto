@@ -4,8 +4,10 @@ import pandas as pd
 def apprentissage():
         X= []
         Y=[]
-        for i in len(os.listdir('./2018')) :
-                semaine = pd.read_csv('./2018/'+str(i))
+        # for i in len(os.listdir('./2018')) :
+        for i in range(10):
+                # semaine = pd.read_csv('./2018/'+str(i))
+                semaine = pd.read_csv('./2018/'+str(i+1))
                 (x,y) = DataOneFile(semaine)
                 X.append(x)
                 Y.append(y)
@@ -20,7 +22,7 @@ def DataOneFile(semaine : pd.DataFrame) -> (list,list):
         (semaine,y)=get_outcome(semaine)
         x = []
         for oneHourInfo in semaine.values :
-                x.extend(oneHourInfo)
+                x.extend(oneHourInfo[1:])
         return (x,y)        
                         
                 
@@ -38,5 +40,5 @@ def get_outcome(df):
         nb_valeurs =int((len(df.index)//100)+1)
         cours = df['Prix']
         df = df.iloc[:len(df.index)-nb_valeurs]
-        outcome = cours[-nb_valeurs:]
+        outcome = list(cours[-nb_valeurs:].values)
         return (df,outcome) 
