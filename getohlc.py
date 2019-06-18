@@ -47,6 +47,8 @@ def get_price_hourly(monnaieCrypto='BTC', monnaieFiat='EUR', since='1/1/2018', t
     nbval=len(dates)
     ts={}
     h_price=[]
+
+    # L'API de CryptoCompare nous permet uniquement de récupérer les valeurs horaires par paquets de 2000
     if nbval>2000:
         limit=2000
         while nbval>2000 :
