@@ -10,7 +10,7 @@ def apprentissage():
         X= []
         Y=[]
         for i in range(len(os.listdir('./2018'))):
-                # for i in range(200):
+        # for i in range(400):
                 semaine = pd.read_csv('./2018/'+str(i+1))
                 (x, y) = DataOneFile(semaine[['Prix', 'ema', 'rsi']])
                 X.append(x)
@@ -22,12 +22,12 @@ def apprentissage():
         #         X.append(x)
         #         Y.append(y)
 
-        for i in range(len(os.listdir('./2019'))):
-                # for i in range(200):
-                semaine = pd.read_csv('./2019/'+str(i+1))
-                (x, y) = DataOneFile(semaine[['Prix', 'ema', 'rsi']])
-                X.append(x)
-                Y.append(y)
+        # for i in range(len(os.listdir('./2019'))):
+        #         # for i in range(200):
+        #         semaine = pd.read_csv('./2019/'+str(i+1))
+        #         (x, y) = DataOneFile(semaine[['Prix', 'ema', 'rsi']])
+        #         X.append(x)
+        #         Y.append(y)
 
         return(X,Y, semaine)
         #On divise les données en 2 parties, la partie "train" qui
@@ -42,7 +42,7 @@ def DataOneFile(semaine : pd.DataFrame) -> (list,list):
         """"x : une donnée input(contenant cours, ema, rsi ...) associée à un 
         y qui est un outcome (ce qu'on veut prédire : seulement le prix).
         L'outcome correspond à 1% de la donnée """
-        (semaine,y)=get_outcome(semaine)
+        (semaine,y)=get_outcome_cat(semaine)
         x = []
         for oneHourInfo in semaine.values :
                 x.extend(oneHourInfo)
@@ -81,16 +81,23 @@ def get_outcome_cat(df):
 
         # on détermine un seuil, qui correspond au pourcentage d'évolution
         # du cours.
-        seuil=0.5
-        if outcome[0]>df[-1:]:
-                if (outcome[0]-df[-1:])/outcome[0] > seuil:
-                        outcome = -1
+        seuil=0.2/100
+        if (outcome[0]>df[-1:]['Prix'].values):
+                print('x : %f, y : %f, dif = %f' % (
+                    outcome[0], df[-1:]['Prix'].values, (outcome[0]-df[-1:]['Prix'].values)/outcome[0]))
+                if (outcome[0]-df[-1:]['Prix'].values)/outcome[0] > seuil:
+                        print(-1)
+                        outcome = 1
                 else:
                         outcome = 0
+        else :
+                if (outcome[0]<df[-1:]['Prix'].values):
+                        if (df[-1:]['Prix'].values-outcome[0])/df[-1:]['Prix'].values>seuil:
+                                print(1)
 
-        if outcome[0]<df[-1:]:
-                if (df[-1:]-outcome[0])/df[-1:]>seuil:
-                        outcome=-1
+                                outcome=-1
+                        else :
+                                outcome=0
                 else :
                         outcome=0
 
