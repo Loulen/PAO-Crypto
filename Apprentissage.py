@@ -59,13 +59,42 @@ def DataOneFile(semaine : pd.DataFrame) -> (list,list):
 
 
 def get_outcome(df):
-        outcome=[]
+        outcome = []
         # nb_valeurs =int((len(df.index)//100)+1)
-        nb_valeurs=1
+        nb_valeurs = 1
         cours = df['Prix']
         df = df.iloc[:len(df.index)-nb_valeurs]
         outcome = list(cours[-nb_valeurs:].values)
-        return (df,outcome) 
+        return (df, outcome)
+
+
+def get_outcome_cat(df):
+        """retourne l'outcome sous forme {1;0;-1} avec :
+        1 = croissance du cours
+        0 = pas de modification significative
+        -1 = décroissance du cours"""
+        outcome = []
+        nb_valeurs = 1
+        cours = df['Prix']
+        df = df.iloc[:len(df.index)-nb_valeurs]
+        outcome = list(cours[-nb_valeurs:].values)
+
+        # on détermine un seuil, qui correspond au pourcentage d'évolution
+        # du cours.
+        seuil=0.5
+        if outcome[0]>df[-1:]:
+                if (outcome[0]-df[-1:])/outcome[0] > seuil:
+                        outcome = -1
+                else:
+                        outcome = 0
+
+        if outcome[0]<df[-1:]:
+                if (df[-1:]-outcome[0])/df[-1:]>seuil:
+                        outcome=-1
+                else :
+                        outcome=0
+
+        return (df, outcome)
 
 (X,Y,semaine)=apprentissage()
 test_len = len(X)//100+1
