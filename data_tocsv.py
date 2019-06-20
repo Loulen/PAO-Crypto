@@ -42,14 +42,14 @@ def data_frame_annee(annee=2018, monnaie='BTC', ema_period=10, rsi_period=14, ho
     hours_left=len(data)
     file_number=1
 
-    if not os.path.exists('./'+str(annee)):
-        os.makedirs('./'+str(annee))
+    if not os.path.exists('./'+str(monnaie)+str(annee)):
+        os.makedirs('./'+str(monnaie)+str(annee))
     else:  
-        shutil.rmtree('./'+str(annee)+'/*')
-        os.makedirs('./'+str(annee))
+        shutil.rmtree('./'+str(monnaie)+str(annee)+'/*')
+        os.makedirs('./'+str(monnaie)+str(annee))
 
     while hours_left>hours_per_file:
-        data[len(data)-hours_left:len(data)-hours_left+hours_per_file].to_csv('./'+str(annee)+'/'+str(file_number))
+        data[len(data)-hours_left:len(data)-hours_left+hours_per_file].to_csv('./'+str(monnaie)+str(annee)+'/'+str(file_number))
         file_number=file_number+1
         hours_left=hours_left-1
 

@@ -1,5 +1,6 @@
 import pandas as pd
 from sklearn import svm
+import os
 from sklearn.linear_model import LinearRegression
 from sklearn.linear_model import Ridge
 from sklearn.preprocessing import PolynomialFeatures
@@ -8,29 +9,32 @@ from sklearn.pipeline import make_pipeline
 def apprentissage():
         X= []
         Y=[]
-        # for i in len(os.listdir('./2018')) :
-        for i in range(2000):
-                # semaine = pd.read_csv('./2018/'+str(i))
+        for i in range(len(os.listdir('./2018'))):
+                # for i in range(200):
                 semaine = pd.read_csv('./2018/'+str(i+1))
-                (x,y) = DataOneFile(semaine)
+                (x, y) = DataOneFile(semaine[['Prix', 'ema', 'rsi']])
+                X.append(x)
+                Y.append(y)
+        # for i in range(len(os.listdir('./2017'))):
+        #         # for i in range(200):
+        #         semaine = pd.read_csv('./2017/'+str(i+1))
+        #         (x, y) = DataOneFile(semaine[['Prix', 'ema', 'rsi']])
+        #         X.append(x)
+        #         Y.append(y)
+
+        for i in range(len(os.listdir('./2019'))):
+                # for i in range(200):
+                semaine = pd.read_csv('./2019/'+str(i+1))
+                (x, y) = DataOneFile(semaine[['Prix', 'ema', 'rsi']])
                 X.append(x)
                 Y.append(y)
 
-        return(X,Y)
+        return(X,Y, semaine)
         #On divise les données en 2 parties, la partie "train" qui
         # va nous servir à train le classifier, et la partie "test"
         # qui nous permettra de tester notre classifier. On prend 
         # arbitrairement 10% de nos données pour tester.
-        # test_len=len(X)//100+1
-        # X_train = X[:-test_len]
-        # Y_train = Y[:-test_len]
-        # X_test = X[len(X)-test_len:]
-        # Y_test = Y[len(Y)-test_len:]
 
-
-        # clf = svm.SVC(gamma='auto')
-        # clf.fit(X_train,Y_train)
-        # print(clf.score(X_test,Y_test))
                
 
 
@@ -41,7 +45,7 @@ def DataOneFile(semaine : pd.DataFrame) -> (list,list):
         (semaine,y)=get_outcome(semaine)
         x = []
         for oneHourInfo in semaine.values :
-                x.extend(oneHourInfo[1:])
+                x.extend(oneHourInfo)
         return (x,y)        
                         
                 
@@ -56,13 +60,14 @@ def DataOneFile(semaine : pd.DataFrame) -> (list,list):
 
 def get_outcome(df):
         outcome=[]
-        nb_valeurs =int((len(df.index)//100)+1)
+        # nb_valeurs =int((len(df.index)//100)+1)
+        nb_valeurs=1
         cours = df['Prix']
         df = df.iloc[:len(df.index)-nb_valeurs]
         outcome = list(cours[-nb_valeurs:].values)
         return (df,outcome) 
 
-(X,Y)=apprentissage()
+(X,Y,semaine)=apprentissage()
 test_len = len(X)//100+1
 X_train = X[:-test_len]
 Y_train = Y[:-test_len]
@@ -84,4 +89,5 @@ clfpoly2.fit(X_train, Y_train)
 
 # confidencereg = clfreg.score(X_test, Y_test)
 confidencepoly2 = clfpoly2.score(X_test, Y_test)
+print(confidencepoly2)
 # confidencepoly3 = clfpoly3.score(X_test, Y_test)
