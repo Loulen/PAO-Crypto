@@ -6,59 +6,92 @@ from sklearn.linear_model import Ridge
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.pipeline import make_pipeline
 
-def apprentissage():
+
+
+def apprentissage(type_learning,nb_annees) :
+        """ renvoie un classifier entrainé avec X et Y, ou X est l'input et Y l'output exact désiré associé.
+            Seulement 90% des données du couples sont utilisées, les 10% restant réservés pour le test.'type_learning' 
+            correspond au type de classifier désiré et 'nb_annees' à la taille du couple X,Y en années.    """
+        if type_learning == 'Lreg' :
+                (X,Y,semaine)=apprentissage_data(nb_annees,'exact')
+                test_len = len(X)//100+1
+                X_train = X[:-test_len]
+                Y_train = Y[:-test_len]        
+                clf = LinearRegression(n_jobs=-1)
+                clf.fit(X_train, Y_train)
+        if type_learning == "Qreg2" :
+                (X,Y,semaine)=apprentissage_data(nb_annees,'exact')
+                test_len = len(X)//100+1
+                X_train = X[:-test_len]
+                Y_train = Y[:-test_len] 
+                clf = make_pipeline(PolynomialFeatures(2), Ridge())
+                clf.fit(X_train, Y_train)
+        if type_learning == "Qreg3" :
+                (X,Y,semaine)=apprentissage_data(nb_annees,'exact')
+                test_len = len(X)//100+1
+                X_train = X[:-test_len]
+                Y_train = Y[:-test_len]
+                clf = make_pipeline(PolynomialFeatures(3), Ridge())
+                clf.fit(X_train, Y_train)
+
+def score(X,Y,clf):
+        """Test le clf donné en entrée, 10% des dernières données sont utilisées pour tester"""
+        test_len = len(X)//100+1
+        X_test = X[len(X)-test_len:]
+        Y_test = Y[len(Y)-test_len:]
+        confidence = clf.score(X_test, Y_test)
+        print(confidence)
+        return confidence
+        
+
+def apprentissage_data(nb_annees,type_outcome):
+        """Construit un couple de vecteurs (X,Y) ou l'input X(i) correspond à un output Y(i). Le nombre d'éléments
+        est fonction du nombre d'années et donc du nombre de données utilisées. 'type_outcome' peut être tendanciel ou 
+        exact."""
         X= []
         Y=[]
         for i in range(len(os.listdir('./2018'))):
-        # for i in range(400):
                 semaine = pd.read_csv('./2018/'+str(i+1))
-                (x, y) = DataOneFile(semaine[['Prix', 'ema', 'rsi']])
+                semaine = semaine.sort_values(['day','hour'])
+                (x,y) = DataOneFile(semaine[['Prix', 'ema','rsi']],type_outcome)
                 X.append(x)
                 Y.append(y)
-        # for i in range(len(os.listdir('./2017'))):
-        #         # for i in range(200):
-        #         semaine = pd.read_csv('./2017/'+str(i+1))
-        #         (x, y) = DataOneFile(semaine[['Prix', 'ema', 'rsi']])
-        #         X.append(x)
-        #         Y.append(y)
+        if nb_annees==2 or nb_annees==3 : 
+                for i in range(len(os.listdir('./2017'))):
+                         semaine = pd.read_csv('./2017/'+str(i+1))
+                         semaine = semaine.sort_values(['day','hour'])
 
-        # for i in range(len(os.listdir('./2019'))):
-        #         # for i in range(200):
-        #         semaine = pd.read_csv('./2019/'+str(i+1))
-        #         (x, y) = DataOneFile(semaine[['Prix', 'ema', 'rsi']])
-        #         X.append(x)
-        #         Y.append(y)
+                         (x, y) = DataOneFile(semaine[['Prix','ema','rsi']],type_outcome)
+                         X.append(x)
+                         Y.append(y)
+        if nb_annees==3 :
+                for i in range(len(os.listdir('./2019'))):
+                         semaine = pd.read_csv('./2019/'+str(i+1))
+                         semaine = semaine.sort_values(['day','hour'])
+                         (x, y) = DataOneFile(semaine[['Prix','ema','rsi']],type_outcome)
+                         X.append(x)
+                         Y.append(y)
 
-        return(X,Y, semaine)
-        #On divise les données en 2 parties, la partie "train" qui
-        # va nous servir à train le classifier, et la partie "test"
-        # qui nous permettra de tester notre classifier. On prend 
-        # arbitrairement 10% de nos données pour tester.
-
-               
+        return(X,Y, semaine)        
 
 
-def DataOneFile(semaine : pd.DataFrame) -> (list,list):
+def DataOneFile(semaine : pd.DataFrame,type_outcome) -> (list,list):
         """"x : une donnée input(contenant cours, ema, rsi ...) associée à un 
         y qui est un outcome (ce qu'on veut prédire : seulement le prix).
-        L'outcome correspond à 1% de la donnée """
-        (semaine,y)=get_outcome_cat(semaine)
+        L'outcome correspond à 1% de la donnée, il est donnée sous la forme d'une valeur de cours précise
+        ou d'un chifre (-1,0,1), selon le type_outcome d'outcome demandé """
+        if type_outcome == 'tendanciel' :
+                (semaine,y)=get_outcome_cat(semaine)
+        if type_outcome == 'exact':
+                (semaine,y)=get_outcome_reg(semaine)
+
         x = []
         for oneHourInfo in semaine.values :
                 x.extend(oneHourInfo)
         return (x,y)        
-                        
-                
-
-        
-        # récuperer 1% des données d outcome de la dataframe
-        # reshape la matrice en un vecteur
-        # chopper l outcome correspondant au dernier pourcent de vecteur
-        # stocker le vecteur dans une matrice X, l outcome dans Y
-        # BALANCE LE ML MON POTE
 
 
-def get_outcome(df):
+def get_outcome_reg(df):
         outcome = []
         # nb_valeurs =int((len(df.index)//100)+1)
         nb_valeurs = 1
@@ -102,28 +135,3 @@ def get_outcome_cat(df):
                         outcome=0
 
         return (df, outcome)
-
-(X,Y,semaine)=apprentissage()
-test_len = len(X)//100+1
-X_train = X[:-test_len]
-Y_train = Y[:-test_len]
-X_test = X[len(X)-test_len:]
-Y_test = Y[len(Y)-test_len:]
-
-# # Linear regression
-# clfreg = LinearRegression(n_jobs=-1)
-# clfreg.fit(X_train, Y_train)
-
-
-# # Quadratic Regression 2
-clfpoly2 = make_pipeline(PolynomialFeatures(2), Ridge())
-clfpoly2.fit(X_train, Y_train)
-
-# Quadratic Regression 3
-# clfpoly3 = make_pipeline(PolynomialFeatures(3), Ridge())
-# clfpoly3.fit(X_train, Y_train)
-
-# confidencereg = clfreg.score(X_test, Y_test)
-confidencepoly2 = clfpoly2.score(X_test, Y_test)
-print(confidencepoly2)
-# confidencepoly3 = clfpoly3.score(X_test, Y_test)
